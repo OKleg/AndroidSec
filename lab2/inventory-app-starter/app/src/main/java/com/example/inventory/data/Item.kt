@@ -29,12 +29,7 @@ data class Item(
     val name: String,
     val price: Double,
     val quantity: Int,
-    //Имя поставщика
     val agentName: String,
-    //E-mail поставщика
     val agentEmail: String,
-    //Мобильный телефон поставщика
-    val agentPhoneNumber: String
-
-
-    )
+    val agentPhoneNumber: String,
+)

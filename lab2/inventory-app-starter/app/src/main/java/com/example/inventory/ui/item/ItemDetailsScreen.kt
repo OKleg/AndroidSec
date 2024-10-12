@@ -57,6 +57,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
@@ -112,6 +113,7 @@ fun ItemDetailsScreen(
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
             onSellItem = { viewModel.reduceQuantityByOne() },
+            onShareItem = { viewModel.share() },
             onDelete = {
                 // Note: If the user rotates the screen very fast, the operation may get cancelled
                 // and the item may not be deleted from the Database. This is because when config
@@ -137,42 +139,52 @@ fun ItemDetailsScreen(
 private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
     onSellItem: () -> Unit,
+    onShareItem: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
         ItemDetails(
-            item = itemDetailsUiState.itemDetails.toItem(), modifier = Modifier.fillMaxWidth()
+            item = itemDetailsUiState.itemDetails.toItem(), modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         )
-        Button(
-            onClick = onSellItem,
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
-            enabled = !itemDetailsUiState.outOfStock
-        ) {
-            Text(stringResource(R.string.sell))
-        }
-        OutlinedButton(
-            onClick = { deleteConfirmationRequired = true },
-            shape = MaterialTheme.shapes.small,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.delete))
-        }
-        if (deleteConfirmationRequired) {
-            DeleteConfirmationDialog(
-                onDeleteConfirm = {
-                    deleteConfirmationRequired = false
-                    onDelete()
-                },
-                onDeleteCancel = { deleteConfirmationRequired = false },
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-            )
-        }
+        //Column(modifier = modifier.padding(start = 0.dp, end = 0.dp, top = 4.dp)) {
+            Button(
+                onClick = onSellItem,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                enabled = !itemDetailsUiState.outOfStock
+            ) {
+                Text(stringResource(R.string.sell))
+            }
+            Button(
+                onClick = onShareItem,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(stringResource(R.string.share))
+            }
+            OutlinedButton(
+                onClick = { deleteConfirmationRequired = true },
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.delete))
+            }
+            if (deleteConfirmationRequired) {
+                DeleteConfirmationDialog(
+                    onDeleteConfirm = {
+                        deleteConfirmationRequired = false
+                        onDelete()
+                    },
+                    onDeleteCancel = { deleteConfirmationRequired = false },
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                )
+            }
+        //}
     }
 }
 
@@ -223,6 +235,42 @@ fun ItemDetails(
                     )
                 )
             )
+            if (item.agentName.isNotBlank()) {
+                ItemDetailsRow(
+                    labelResID = R.string.agent_name,
+                    itemDetail = item.agentName,
+                    modifier = Modifier.padding(
+                        horizontal = dimensionResource(
+                            id = R.dimen
+                                .padding_medium
+                        )
+                    )
+                )
+            }
+            if (item.agentEmail.isNotBlank()) {
+                ItemDetailsRow(
+                    labelResID = R.string.agent_email,
+                    itemDetail = item.agentEmail,
+                    modifier = Modifier.padding(
+                        horizontal = dimensionResource(
+                            id = R.dimen
+                                .padding_medium
+                        )
+                    )
+                )
+            }
+            if (item.agentPhoneNumber.isNotBlank()) {
+                ItemDetailsRow(
+                    labelResID = R.string.agent_phone_number,
+                    itemDetail = item.agentPhoneNumber,
+                    modifier = Modifier.padding(
+                        horizontal = dimensionResource(
+                            id = R.dimen
+                                .padding_medium
+                        )
+                    )
+                )
+            }
         }
 
     }
@@ -264,7 +312,7 @@ private fun DeleteConfirmationDialog(
 fun ItemDetailsScreenPreview() {
     InventoryTheme {
         ItemDetailsBody(ItemDetailsUiState(
-            outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10")
-        ), onSellItem = {}, onDelete = {})
+            outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10", "Bob", "bob@gmail.com", "+78005553535")
+        ), onSellItem = {}, onShareItem = {}, onDelete = {})
     }
 }

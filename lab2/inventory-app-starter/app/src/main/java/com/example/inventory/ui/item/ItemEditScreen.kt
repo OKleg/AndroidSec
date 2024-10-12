@@ -72,8 +72,9 @@ fun ItemEditScreen(
                 // change occurs, the Activity will be recreated and the rememberCoroutineScope will
                 // be cancelled - since the scope is bound to composition.
                 coroutineScope.launch {
-                    viewModel.updateItem()
-                    navigateBack()
+                    if (viewModel.updateItem()) {
+                        navigateBack()
+                    }
                 }
             },
             modifier = Modifier

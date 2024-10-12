@@ -16,15 +16,23 @@
 
 package com.example.inventory.ui.item
 
+import android.content.Intent
+import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.inventory.SharedData
 import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -60,6 +68,14 @@ class ItemDetailsViewModel(
             val currentItem = uiState.value.itemDetails.toItem()
             if (currentItem.quantity > 0) {
                 itemsRepository.updateItem(currentItem.copy(quantity = currentItem.quantity - 1))
+            }
+        }
+    }
+
+    fun share() {
+        viewModelScope.launch {
+            SharedData.dataToShare.update {
+                it.copy(text = uiState.value.itemDetails.toString())
             }
         }
     }

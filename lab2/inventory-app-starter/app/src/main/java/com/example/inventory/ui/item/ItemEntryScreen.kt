@@ -40,6 +40,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
@@ -82,8 +83,9 @@ fun ItemEntryScreen(
                 // change occurs, the Activity will be recreated and the rememberCoroutineScope will
                 // be cancelled - since the scope is bound to composition.
                 coroutineScope.launch {
-                    viewModel.saveItem()
-                    navigateBack()
+                    if (viewModel.saveItem()) {
+                        navigateBack()
+                    }
                 }
             },
             modifier = Modifier
@@ -111,12 +113,12 @@ fun ItemEntryBody(
     ) {
         ItemInputForm(
             itemDetails = itemUiState.itemDetails,
+            itemUiState = itemUiState,
             onValueChange = onItemValueChange,
             modifier = Modifier.fillMaxWidth()
         )
         Button(
             onClick = onSaveClick,
-            enabled = itemUiState.isEntryValid,
             shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -128,56 +130,161 @@ fun ItemEntryBody(
 @Composable
 fun ItemInputForm(
     itemDetails: ItemDetails,
+    itemUiState: ItemUiState,
     modifier: Modifier = Modifier,
     onValueChange: (ItemDetails) -> Unit = {},
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-        OutlinedTextField(
-            value = itemDetails.name,
-            onValueChange = { onValueChange(itemDetails.copy(name = it)) },
-            label = { Text(stringResource(R.string.item_name_req)) },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-            singleLine = true
-        )
-        OutlinedTextField(
-            value = itemDetails.price,
-            onValueChange = { onValueChange(itemDetails.copy(price = it)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            label = { Text(stringResource(R.string.item_price_req)) },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            ),
-            leadingIcon = { Text(Currency.getInstance(Locale.getDefault()).symbol) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-            singleLine = true
-        )
-        OutlinedTextField(
-            value = itemDetails.quantity,
-            onValueChange = { onValueChange(itemDetails.copy(quantity = it)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            label = { Text(stringResource(R.string.quantity_req)) },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-            singleLine = true
-        )
+        Column(modifier = modifier.padding(0.dp)) {
+            OutlinedTextField(
+                value = itemDetails.name,
+                onValueChange = { onValueChange(itemDetails.copy(name = it)) },
+                label = { Text(stringResource(R.string.item_name_req)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            if (itemUiState.errorDetails.name.isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp),
+                    text = itemUiState.errorDetails.name,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        Column(modifier = modifier.padding(0.dp)) {
+            OutlinedTextField(
+                value = itemDetails.price,
+                onValueChange = { onValueChange(itemDetails.copy(price = it)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                label = { Text(stringResource(R.string.item_price_req)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                leadingIcon = { Text(Currency.getInstance(Locale.getDefault()).symbol) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            if (itemUiState.errorDetails.price.isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp),
+                    text = itemUiState.errorDetails.price,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        Column(modifier = modifier.padding(0.dp)) {
+            OutlinedTextField(
+                value = itemDetails.quantity,
+                onValueChange = { onValueChange(itemDetails.copy(quantity = it)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                label = { Text(stringResource(R.string.quantity_req)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            if (itemUiState.errorDetails.quantity.isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp),
+                    text = itemUiState.errorDetails.quantity,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        Column(modifier = modifier.padding(0.dp)) {
+            OutlinedTextField(
+                value = itemDetails.agentName,
+                onValueChange = { onValueChange(itemDetails.copy(agentName = it)) },
+                label = { Text(stringResource(R.string.agent_name)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            if (itemUiState.errorDetails.agentName.isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp),
+                    text = itemUiState.errorDetails.agentName,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        Column(modifier = modifier.padding(0.dp)) {
+            OutlinedTextField(
+                value = itemDetails.agentEmail,
+                onValueChange = { onValueChange(itemDetails.copy(agentEmail = it)) },
+                label = { Text(stringResource(R.string.agent_email)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            if (itemUiState.errorDetails.agentEmail.isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp),
+                    text = itemUiState.errorDetails.agentEmail,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        Column(modifier = modifier.padding(0.dp)) {
+            OutlinedTextField(
+                value = itemDetails.agentPhoneNumber,
+                onValueChange = { onValueChange(itemDetails.copy(agentPhoneNumber = it)) },
+                label = { Text(stringResource(R.string.agent_phone_number)) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = true
+            )
+            if (itemUiState.errorDetails.agentPhoneNumber.isNotEmpty()) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, top = 0.dp),
+                    text = itemUiState.errorDetails.agentPhoneNumber,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
         if (enabled) {
             Text(
                 text = stringResource(R.string.required_fields),
@@ -193,7 +300,12 @@ private fun ItemEntryScreenPreview() {
     InventoryTheme {
         ItemEntryBody(itemUiState = ItemUiState(
             ItemDetails(
-                name = "Item name", price = "10.00", quantity = "5"
+                name = "Item name",
+                price = "10.00",
+                quantity = "5",
+                agentName = "Bob",
+                agentEmail = "bob@gmail.com",
+                agentPhoneNumber = "+78005553535"
             )
         ), onItemValueChange = {}, onSaveClick = {})
     }
