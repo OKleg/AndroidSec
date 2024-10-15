@@ -301,10 +301,10 @@ private fun ItemEntryScreenPreview() {
         ItemEntryBody(itemUiState = ItemUiState(
             ItemDetails(
                 name = "Item name",
-                price = "10.00",
+                price = "11.11",
                 quantity = "5",
-                agentName = "Bob",
-                agentEmail = "bob@gmail.com",
+                agentName = "Joe",
+                agentEmail = "joe@doe.com",
                 agentPhoneNumber = "+78005553535"
             )
         ), onItemValueChange = {}, onSaveClick = {})

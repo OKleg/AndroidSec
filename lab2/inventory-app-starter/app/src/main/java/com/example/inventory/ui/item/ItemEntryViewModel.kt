@@ -163,7 +163,6 @@ fun Item.formatedPrice(): String {
  */
 fun Item.toItemUiState(isEntryValid: Boolean = false): ItemUiState = ItemUiState(
     itemDetails = this.toItemDetails(),
-    //isEntryValid = isEntryValid
 )
 
 /**
