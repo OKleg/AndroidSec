@@ -66,6 +66,11 @@ import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
+import androidx.compose.material3.TextField
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import com.example.inventory.Preferences
+import com.example.inventory.SharedData
 
 object ItemDetailsDestination : NavigationDestination {
     override val route = "item_details"
@@ -83,6 +88,8 @@ fun ItemDetailsScreen(
     viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    val hideImportantData = SharedData.preferences.sharedPreferences.getBoolean(Preferences.HIDE_IMPORTANT_DATA, false)
+    val prohibitSendingData = SharedData.preferences.sharedPreferences.getBoolean(Preferences.PROHIBIT_SENDING_DATA, false)
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
@@ -112,6 +119,8 @@ fun ItemDetailsScreen(
     ) { innerPadding ->
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
+            hideImportantData = hideImportantData,
+            prohibitSendingData = prohibitSendingData,
             onSellItem = { viewModel.reduceQuantityByOne() },
             onShareItem = { viewModel.share() },
             onDelete = {
@@ -138,6 +147,8 @@ fun ItemDetailsScreen(
 @Composable
 private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
+    hideImportantData: Boolean,
+    prohibitSendingData: Boolean,
     onSellItem: () -> Unit,
     onShareItem: () -> Unit,
     onDelete: () -> Unit,
@@ -149,8 +160,9 @@ private fun ItemDetailsBody(
     ) {
         var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
         ItemDetails(
-            item = itemDetailsUiState.itemDetails.toItem(), modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
+            item = itemDetailsUiState.itemDetails.toItem(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            hideImportantData = hideImportantData        )
         //Column(modifier = modifier.padding(start = 0.dp, end = 0.dp, top = 4.dp)) {
             Button(
                 onClick = onSellItem,
@@ -163,8 +175,8 @@ private fun ItemDetailsBody(
             Button(
                 onClick = onShareItem,
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.small
-            ) {
+                shape = MaterialTheme.shapes.small,
+                enabled = !prohibitSendingData            ) {
                 Text(stringResource(R.string.share))
             }
             OutlinedButton(
@@ -191,7 +203,7 @@ private fun ItemDetailsBody(
 
 @Composable
 fun ItemDetails(
-    item: Item, modifier: Modifier = Modifier
+    item: Item, modifier: Modifier = Modifier, hideImportantData: Boolean
 ) {
     Card(
         modifier = modifier, colors = CardDefaults.cardColors(
@@ -244,7 +256,8 @@ fun ItemDetails(
                             id = R.dimen
                                 .padding_medium
                         )
-                    )
+                    ),
+                    hideImportantData = hideImportantData
                 )
             }
             if (item.agentEmail.isNotBlank()) {
@@ -256,7 +269,8 @@ fun ItemDetails(
                             id = R.dimen
                                 .padding_medium
                         )
-                    )
+                    ),
+                    hideImportantData = hideImportantData
                 )
             }
             if (item.agentPhoneNumber.isNotBlank()) {
@@ -278,11 +292,11 @@ fun ItemDetails(
 
 @Composable
 private fun ItemDetailsRow(
-    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier
-) {
+    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier, hideImportantData: Boolean = false) {
     Row(modifier = modifier) {
         Text(text = stringResource(labelResID))
         Spacer(modifier = Modifier.weight(1f))
+        Text(text = if (hideImportantData) "****" else itemDetail, fontWeight = FontWeight.Bold)
         Text(text = itemDetail, fontWeight = FontWeight.Bold)
     }
 }
@@ -312,7 +326,7 @@ private fun DeleteConfirmationDialog(
 fun ItemDetailsScreenPreview() {
     InventoryTheme {
         ItemDetailsBody(ItemDetailsUiState(
-            outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10", "Bob", "bob@gmail.com", "+78005553535")
-        ), onSellItem = {}, onShareItem = {}, onDelete = {})
+            outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10", "Joe", "joe@doe.com", "+78005553535")
+        ), onSellItem = {}, onShareItem = {}, onDelete = {}, hideImportantData = false, prohibitSendingData = false)
     }
 }
