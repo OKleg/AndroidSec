@@ -38,16 +38,15 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
         Preferences.USE_DEFAULT_ITEMS_QUANTITY,
         false
     )
-    private val defaultItemsQuantity = SharedData.preferences.sharedPreferences.getInt(
+    private val defaultItemsQuantity = SharedData.preferences.sharedPreferences.getString(
         Preferences.DEFAULT_ITEMS_QUANTITY,
-        1
-    )
+        "1"
+    )!!
     /**
      * Holds current item ui state
      */
     var itemUiState by mutableStateOf(ItemUiState(
-        itemDetails = if (useDefaultItemsQuantity) ItemDetails(quantity = defaultItemsQuantity.toString()) else ItemDetails()
-    ))
+        itemDetails = if (useDefaultItemsQuantity) ItemDetails(quantity = defaultItemsQuantity) else ItemDetails()    ))
         private set
 
     /**

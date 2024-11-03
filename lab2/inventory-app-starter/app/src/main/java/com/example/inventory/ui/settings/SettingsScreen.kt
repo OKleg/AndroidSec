@@ -1,12 +1,32 @@
 package com.example.inventory.ui.settings
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -14,19 +34,31 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
+import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
+import com.example.inventory.ui.item.ItemDetailsDestination
+import com.example.inventory.ui.item.formatedPrice
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
+
 object SettingsDestination : NavigationDestination {
     override val route = "settings"
     override val titleRes = R.string.settings_title
@@ -52,8 +84,14 @@ fun SettingsScreen(
         SettingsBody(
             settingsUiState = viewModel.settingsUiState,
             onSettingsChanged = viewModel::update,
-            modifier = modifier.fillMaxSize(),
-            contentPadding = innerPadding,
+            modifier = Modifier
+                .padding(
+                    start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
+                    top = innerPadding.calculateTopPadding(),
+                    end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
+                )
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
         )
     }
 }
@@ -62,11 +100,11 @@ private fun SettingsBody(
     settingsUiState: SettingsUiState,
     onSettingsChanged: (SettingsUiState) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier,
+        horizontalAlignment = Alignment.Start,
+        //verticalArrangement = Arrangement.Top,
+        modifier = modifier.padding(15.dp, 5.dp),
     ) {
         SettingCheckbox(
             label = "Hide important data",
@@ -91,9 +129,9 @@ private fun SettingsBody(
         )
         if (settingsUiState.useDefaultItemsQuantity) {
             OutlinedTextField(
-                value = settingsUiState.defaultItemsQuantity.toString(),
+                value = settingsUiState.defaultItemsQuantity,
                 onValueChange = {
-                    onSettingsChanged(settingsUiState.copy(defaultItemsQuantity = it.toInt()))
+                    onSettingsChanged(settingsUiState.copy(defaultItemsQuantity = it))
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 label = { Text("Default items quantity") },
@@ -115,12 +153,21 @@ private fun SettingCheckbox(
     onValueChanged: (Boolean) -> Unit
 ) {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label)
         Checkbox(
             checked = checked,
             onCheckedChange = onValueChanged
+        )
+        Text(label)
+    }
+}
+@Preview(showBackground = true)
+@Composable
+fun SettingsPreview() {
+    InventoryTheme {
+        SettingsScreen(
+            navigateBack = {}
         )
     }
 }
