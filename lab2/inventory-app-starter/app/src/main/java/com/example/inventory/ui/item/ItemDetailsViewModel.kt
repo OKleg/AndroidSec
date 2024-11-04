@@ -34,7 +34,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 /**
  * ViewModel to retrieve, update and delete an item from the [ItemsRepository]'s data source.
  */
@@ -76,6 +77,15 @@ class ItemDetailsViewModel(
         viewModelScope.launch {
             SharedData.dataToShare.update {
                 it.copy(text = uiState.value.itemDetails.toString())
+            }
+        }
+    }
+
+
+    fun save() {
+        viewModelScope.launch {
+            SharedData.dataToSave.update {
+                it.copy(text = Json.encodeToString(uiState.value.itemDetails))
             }
         }
     }

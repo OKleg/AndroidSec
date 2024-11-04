@@ -27,6 +27,7 @@ import java.text.NumberFormat
 import android.util.Patterns
 import com.example.inventory.Preferences
 import com.example.inventory.SharedData
+import kotlinx.serialization.Serializable
 
 /**
  * ViewModel to validate and insert items in the Room database.
@@ -118,6 +119,7 @@ data class ItemUiState(
     //val isEntryValid: Boolean = false,
 )
 
+@Serializable
 data class ItemDetails(
     val id: Int = 0,
     val name: String = "",

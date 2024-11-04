@@ -18,6 +18,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    kotlin("plugin.serialization") version "2.0.21" apply true
 }
 
 android {
@@ -90,4 +91,7 @@ dependencies {
 
     //Crypto
     implementation ("androidx.security:security-crypto:1.1.0-alpha03")
+
+    //Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
 }

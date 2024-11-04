@@ -123,6 +123,7 @@ fun ItemDetailsScreen(
             prohibitSendingData = prohibitSendingData,
             onSellItem = { viewModel.reduceQuantityByOne() },
             onShareItem = { viewModel.share() },
+            onSaveItem = { viewModel.save() },
             onDelete = {
                 // Note: If the user rotates the screen very fast, the operation may get cancelled
                 // and the item may not be deleted from the Database. This is because when config
@@ -151,6 +152,7 @@ private fun ItemDetailsBody(
     prohibitSendingData: Boolean,
     onSellItem: () -> Unit,
     onShareItem: () -> Unit,
+    onSaveItem: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -178,6 +180,13 @@ private fun ItemDetailsBody(
                 shape = MaterialTheme.shapes.small,
                 enabled = !prohibitSendingData            ) {
                 Text(stringResource(R.string.share))
+            }
+            Button(
+                onClick = onSaveItem,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(stringResource(R.string.save))
             }
             OutlinedButton(
                 onClick = { deleteConfirmationRequired = true },
@@ -327,6 +336,5 @@ fun ItemDetailsScreenPreview() {
     InventoryTheme {
         ItemDetailsBody(ItemDetailsUiState(
             outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10", "Joe", "joe@doe.com", "+78005553535")
-        ), onSellItem = {}, onShareItem = {}, onDelete = {}, hideImportantData = false, prohibitSendingData = false)
-    }
+        ), onSellItem = {}, onShareItem = {}, onSaveItem = {}, onDelete = {}, hideImportantData = false, prohibitSendingData = false)    }
 }
