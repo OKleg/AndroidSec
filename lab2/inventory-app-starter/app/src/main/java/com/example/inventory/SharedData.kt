@@ -9,14 +9,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 data class LoadData(val needToLoad: Boolean = false, val data: ItemDetails? = null)
 
-data class ShareData(val text: String = "")
-
+data class ShareData(val text: String = "") {
+    override fun equals(other: Any?): Boolean {
+        return this === other
+    }
+    override fun hashCode(): Int {
+        return text.hashCode()
+    }
+}
 object SharedData {
     val dataToShare: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
     val dataToSave: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
     val dataToLoad: MutableStateFlow<LoadData> = MutableStateFlow(LoadData())
     lateinit var preferences: Preferences
 }
+
 class Preferences(context: Context) {
     val masterKey: MasterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)

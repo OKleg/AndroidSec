@@ -35,7 +35,8 @@
     <string name="quantity_in_stock">Quantity in stock</string>
     <string name="agent_name">Agent Name</string>
     <string name="agent_email">Agent Email</string>
-    <string name="agent_phone_number">Agent Phone</string>
+    <string name="agent_phone_number">Agent Phone Number</string>
+    <string name="source_type">Source Data</string>
     <string name="in_stock">%d in stock</string>
     <string name="quantity_req">Quantity in Stock*</string>
     <string name="save_action">Save</string>

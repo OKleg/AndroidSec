@@ -77,6 +77,7 @@ fun ItemEditScreen(
                     }
                 }
             },
+            isNew = false,
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),

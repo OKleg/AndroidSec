@@ -37,6 +37,7 @@ import androidx.security.crypto.EncryptedFile
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import java.io.FileInputStream
 import java.io.File
 
 
@@ -145,24 +146,26 @@ class MainActivity : ComponentActivity() {
                 outputStream.write(inputStream.readBytes())
                 outputStream.flush()
                 outputStream.close()
-                val encryptedFile: EncryptedFile = EncryptedFile.Builder(
-                    this,
-                    file,
-                    SharedData.preferences.masterKey,
-                    EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-                ).build()
-                val encryptedInputStream = encryptedFile.openFileInput()
-                val data = encryptedInputStream.readBytes()
-                encryptedInputStream.close()
-                val stringData = data.toString(Charsets.UTF_8)
-                val objectData = Json.decodeFromString<ItemDetails>(stringData)
+                lateinit var encryptedInputStream: FileInputStream
+                try {
+                    val encryptedFile: EncryptedFile = EncryptedFile.Builder(
+                        this,
+                        file,
+                        SharedData.preferences.masterKey,
+                        EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+                    ).build()
+                    encryptedInputStream = encryptedFile.openFileInput()
+                    val data = encryptedInputStream.readBytes()
+                    val stringData = data.toString(Charsets.UTF_8)
+                    val objectData: ItemDetails = Json.decodeFromString<ItemDetails>(stringData)
+                    lifecycleScope.launch {
+                        SharedData.dataToLoad.update {
+                            it.copy(data = objectData)
+                        }
+                    }
+                } catch (_: Exception) { }
                 encryptedInputStream.close()
                 inputStream.close()
-                lifecycleScope.launch {
-                    SharedData.dataToLoad.update {
-                        it.copy(data = objectData)
-                    }
-                }
             }
         }
     }

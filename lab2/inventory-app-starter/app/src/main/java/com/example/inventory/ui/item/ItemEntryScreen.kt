@@ -87,6 +87,7 @@ fun ItemEntryScreen(
                 }
             },
             canLoad = true,
+            isNew = true,
             onLoadClick = {
                 coroutineScope.launch {
                     SharedData.dataToLoad.update {
@@ -113,16 +114,18 @@ fun ItemEntryBody(
     onItemValueChange: (ItemDetails) -> Unit,
     onSaveClick: () -> Unit,
     canLoad: Boolean = false,
+    isNew: Boolean = true,
     onLoadClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         ItemInputForm(
             itemDetails = itemUiState.itemDetails,
             itemUiState = itemUiState,
+            isNew = isNew,
             onValueChange = onItemValueChange,
             modifier = Modifier.fillMaxWidth()
         )
@@ -152,6 +155,7 @@ fun ItemInputForm(
     modifier: Modifier = Modifier,
     onValueChange: (ItemDetails) -> Unit = {},
     enabled: Boolean = true,
+    isNew: Boolean = true
 ) {
     Column(
         modifier = modifier,
@@ -300,6 +304,24 @@ fun ItemInputForm(
                     text = itemUiState.errorDetails.agentPhoneNumber,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+        if (!isNew) {
+            Column(modifier = modifier.padding(0.dp)) {
+                OutlinedTextField(
+                    value = itemDetails.sourceType,
+                    onValueChange = { },
+                    label = { Text(stringResource(R.string.source_type)) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true,
+                    enabled = enabled,
+                    singleLine = true
                 )
             }
         }

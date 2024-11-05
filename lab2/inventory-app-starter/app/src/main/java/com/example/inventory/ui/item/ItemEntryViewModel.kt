@@ -41,7 +41,7 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
         viewModelScope.launch {
             SharedData.dataToLoad.collect { collectedData ->
                 if (collectedData.needToLoad && collectedData.data != null) {
-                    itemsRepository.insertItem(collectedData.data.copy(id = 0).toItem())
+                    itemsRepository.insertItem(collectedData.data.copy(id = 0, sourceType = "file").toItem())
                     SharedData.dataToLoad.update { updatedData ->
                         updatedData.copy(needToLoad = false, data = null)
                     }
@@ -80,14 +80,11 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
         val (isValid, errorDetails) = validateInput()
         itemUiState = ItemUiState(itemDetails = itemUiState.itemDetails, errorDetails = errorDetails)
         if (isValid) {
-            itemsRepository.insertItem(itemUiState.itemDetails.toItem())
+            itemsRepository.insertItem(itemUiState.itemDetails.copy(sourceType = "manual").toItem())
         }
         return isValid
     }
 
-    suspend fun loadItem(itemDetails: ItemDetails) {
-        itemsRepository.insertItem(itemDetails.toItem())
-    }
     private fun validateInput(itemDetails: ItemDetails = itemUiState.itemDetails): Pair<Boolean, ErrorDetails> {
         val errorDetails = ErrorDetails()
         var hasErrors = false
@@ -144,7 +141,9 @@ data class ItemDetails(
     val quantity: String = "",
     val agentName: String = "",
     val agentEmail: String = "",
-    val agentPhoneNumber: String = ""
+    val agentPhoneNumber: String = "",
+    val sourceType: String = ""
+
 ) {
     override fun toString(): String {
         var result = "Name: $name\nPrice: $price\nQuantity: $quantity\n"
@@ -155,7 +154,10 @@ data class ItemDetails(
             result += "Agent Email: $agentEmail\n"
         }
         if (agentPhoneNumber.isNotBlank()) {
-            result += "Agent Phone: $agentPhoneNumber"
+            result += "Agent Phone: $agentPhoneNumber\n"
+        }
+        if (sourceType.isNotBlank()) {
+            result += "Source Type: $sourceType"
         }
         return result
     }
@@ -182,7 +184,8 @@ fun ItemDetails.toItem(): Item = Item(
     quantity = quantity.toIntOrNull() ?: 0,
     agentName = agentName,
     agentEmail = agentEmail,
-    agentPhoneNumber = agentPhoneNumber
+    agentPhoneNumber = agentPhoneNumber,
+    sourceType = sourceType
 )
 
 fun Item.formatedPrice(): String {
@@ -206,5 +209,6 @@ fun Item.toItemDetails(): ItemDetails = ItemDetails(
     quantity = quantity.toString(),
     agentName = agentName,
     agentEmail = agentEmail,
-    agentPhoneNumber = agentPhoneNumber
+    agentPhoneNumber = agentPhoneNumber,
+    sourceType = sourceType
 )
