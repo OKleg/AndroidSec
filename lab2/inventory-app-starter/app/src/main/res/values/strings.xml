@@ -39,6 +39,7 @@
     <string name="in_stock">%d in stock</string>
     <string name="quantity_req">Quantity in Stock*</string>
     <string name="save_action">Save</string>
+    <string name="load_action">Load</string>
     <string name="sell">Sell</string>
     <string name="share">Share</string>
     <string name="save">Save</string>

@@ -44,9 +44,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
+import com.example.inventory.SharedData
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Currency
 import java.util.Locale
@@ -78,14 +80,19 @@ fun ItemEntryScreen(
             itemUiState = viewModel.itemUiState,
             onItemValueChange = viewModel::updateUiState,
             onSaveClick = {
-                // Note: If the user rotates the screen very fast, the operation may get cancelled
-                // and the item may not be saved in the Database. This is because when config
-                // change occurs, the Activity will be recreated and the rememberCoroutineScope will
-                // be cancelled - since the scope is bound to composition.
                 coroutineScope.launch {
                     if (viewModel.saveItem()) {
                         navigateBack()
                     }
+                }
+            },
+            canLoad = true,
+            onLoadClick = {
+                coroutineScope.launch {
+                    SharedData.dataToLoad.update {
+                        it.copy(needToLoad = true)
+                    }
+                    navigateBack()
                 }
             },
             modifier = Modifier
@@ -105,6 +112,8 @@ fun ItemEntryBody(
     itemUiState: ItemUiState,
     onItemValueChange: (ItemDetails) -> Unit,
     onSaveClick: () -> Unit,
+    canLoad: Boolean = false,
+    onLoadClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -123,6 +132,15 @@ fun ItemEntryBody(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.save_action))
+        }
+        if (canLoad) {
+            Button(
+                onClick = onLoadClick,
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(R.string.load_action))
+            }
         }
     }
 }
@@ -307,6 +325,6 @@ private fun ItemEntryScreenPreview() {
                 agentEmail = "joe@doe.com",
                 agentPhoneNumber = "+78005553535"
             )
-        ), onItemValueChange = {}, onSaveClick = {})
+        ), onItemValueChange = {}, onSaveClick = {}, onLoadClick = {})
     }
 }

@@ -15,10 +15,12 @@
  */
 package com.example.inventory
 
+import android.R.id
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.provider.DocumentsContract
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,7 +30,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.net.toFile
+import com.example.inventory.ui.item.ItemDetails
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.update
 import androidx.security.crypto.EncryptedFile
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
@@ -39,6 +43,7 @@ import java.io.File
 class MainActivity : ComponentActivity() {
     companion object {
         const val CREATE_FILE = 1
+        const val LOAD_FILE = 2
         var dataToSave = ""
     }
 
@@ -81,34 +86,84 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        lifecycleScope.launch {
+            SharedData.dataToLoad.collect {
+                if (it.needToLoad && it.data == null) {
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "application/json"
+                    }
+                    startActivityForResult(intent, LOAD_FILE)
+                }
+            }
+        }
         SharedData.preferences = Preferences(this)
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
-        if (requestCode == CREATE_FILE && resultCode == Activity.RESULT_OK) {
-            val intent = resultData ?: return
-            val uri = intent.data ?: return
-            val outputStream = contentResolver.openOutputStream(uri) ?: return
-            val file = kotlin.io.path.createTempFile().toFile()
-            if (file.exists()) {
-                file.delete()
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+        when (requestCode) {
+            CREATE_FILE -> {
+                val intent = resultData ?: return
+                val uri = intent.data ?: return
+                val id = DocumentsContract.getDocumentId(uri)
+                val outputStream = contentResolver.openOutputStream(uri) ?: return
+                val file = File(cacheDir.absolutePath + "/" + id)
+                if (file.exists()) {
+                    file.delete()
+                }
+                val encryptedFile: EncryptedFile = EncryptedFile.Builder(
+                    this,
+                    file,
+                    SharedData.preferences.masterKey,
+                    EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+                ).build()
+                val encryptedOutputStream = encryptedFile.openFileOutput()
+                encryptedOutputStream.write(dataToSave.toByteArray(Charsets.UTF_8))
+                encryptedOutputStream.flush()
+                encryptedOutputStream.close()
+                val inputStream = file.inputStream()
+                outputStream.write(inputStream.readBytes())
+                inputStream.close()
+                outputStream.close()
             }
-            val encryptedFile: EncryptedFile = EncryptedFile.Builder(
-                this,
-                file,
-                SharedData.preferences.masterKey,
-                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            ).build()
-            val encryptedOutputStream = encryptedFile.openFileOutput()
-            encryptedOutputStream.write(dataToSave.toByteArray())
-            encryptedOutputStream.flush()
-            encryptedOutputStream.close()
-            val inputStream = file.inputStream()
-            outputStream.write(inputStream.readBytes())
-            inputStream.close()
-            outputStream.close()
+            LOAD_FILE -> {
+                val intent = resultData ?: return
+                val uri = intent.data ?: return
+                val id = DocumentsContract.getDocumentId(uri)
+                val inputStream = contentResolver.openInputStream(uri) ?: return
+                val file = File(cacheDir.absolutePath + "/" + id)
+                if (file.exists()) {
+                    file.delete()
+                }
+                val outputStream = file.outputStream()
+                outputStream.write(inputStream.readBytes())
+                outputStream.flush()
+                outputStream.close()
+                val encryptedFile: EncryptedFile = EncryptedFile.Builder(
+                    this,
+                    file,
+                    SharedData.preferences.masterKey,
+                    EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+                ).build()
+                val encryptedInputStream = encryptedFile.openFileInput()
+                val data = encryptedInputStream.readBytes()
+                encryptedInputStream.close()
+                val stringData = data.toString(Charsets.UTF_8)
+                val objectData = Json.decodeFromString<ItemDetails>(stringData)
+                encryptedInputStream.close()
+                inputStream.close()
+                lifecycleScope.launch {
+                    SharedData.dataToLoad.update {
+                        it.copy(data = objectData)
+                    }
+                }
+            }
         }
     }
 }

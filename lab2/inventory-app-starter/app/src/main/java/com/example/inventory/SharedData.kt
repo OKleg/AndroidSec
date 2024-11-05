@@ -7,13 +7,16 @@ import androidx.security.crypto.MasterKey
 import com.example.inventory.ui.item.ItemDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 
+data class LoadData(val needToLoad: Boolean = false, val data: ItemDetails? = null)
+
 data class ShareData(val text: String = "")
 
 object SharedData {
     val dataToShare: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
+    val dataToSave: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
+    val dataToLoad: MutableStateFlow<LoadData> = MutableStateFlow(LoadData())
     lateinit var preferences: Preferences
 }
-val dataToSave: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
 class Preferences(context: Context) {
     val masterKey: MasterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)

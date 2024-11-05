@@ -25,8 +25,11 @@ import com.example.inventory.data.Item
 import com.example.inventory.data.ItemsRepository
 import java.text.NumberFormat
 import android.util.Patterns
+import androidx.lifecycle.viewModelScope
 import com.example.inventory.Preferences
 import com.example.inventory.SharedData
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 /**
@@ -34,7 +37,18 @@ import kotlinx.serialization.Serializable
  */
 class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewModel() {
 
-
+    init {
+        viewModelScope.launch {
+            SharedData.dataToLoad.collect { collectedData ->
+                if (collectedData.needToLoad && collectedData.data != null) {
+                    itemsRepository.insertItem(collectedData.data.copy(id = 0).toItem())
+                    SharedData.dataToLoad.update { updatedData ->
+                        updatedData.copy(needToLoad = false, data = null)
+                    }
+                }
+            }
+        }
+    }
     private val useDefaultItemsQuantity = SharedData.preferences.sharedPreferences.getBoolean(
         Preferences.USE_DEFAULT_ITEMS_QUANTITY,
         false
@@ -71,6 +85,9 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
         return isValid
     }
 
+    suspend fun loadItem(itemDetails: ItemDetails) {
+        itemsRepository.insertItem(itemDetails.toItem())
+    }
     private fun validateInput(itemDetails: ItemDetails = itemUiState.itemDetails): Pair<Boolean, ErrorDetails> {
         val errorDetails = ErrorDetails()
         var hasErrors = false
