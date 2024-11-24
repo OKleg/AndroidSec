@@ -44,6 +44,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,21 +57,20 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
+import com.example.inventory.Preferences
 import com.example.inventory.R
+import com.example.inventory.SharedData
 import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
-import androidx.compose.material3.TextField
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import com.example.inventory.Preferences
-import com.example.inventory.SharedData
 
 object ItemDetailsDestination : NavigationDestination {
     override val route = "item_details"
@@ -164,7 +164,8 @@ private fun ItemDetailsBody(
         ItemDetails(
             item = itemDetailsUiState.itemDetails.toItem(),
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-            hideImportantData = hideImportantData        )
+            hideImportantData = hideImportantData
+        )
         //Column(modifier = modifier.padding(start = 0.dp, end = 0.dp, top = 4.dp)) {
             Button(
                 onClick = onSellItem,
@@ -178,7 +179,8 @@ private fun ItemDetailsBody(
                 onClick = onShareItem,
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
-                enabled = !prohibitSendingData            ) {
+                enabled = !prohibitSendingData
+            ) {
                 Text(stringResource(R.string.share))
             }
             Button(
@@ -314,12 +316,12 @@ fun ItemDetails(
 
 @Composable
 private fun ItemDetailsRow(
-    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier, hideImportantData: Boolean = false) {
+    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier, hideImportantData: Boolean = false
+) {
     Row(modifier = modifier) {
         Text(text = stringResource(labelResID))
         Spacer(modifier = Modifier.weight(1f))
         Text(text = if (hideImportantData) "****" else itemDetail, fontWeight = FontWeight.Bold)
-        Text(text = itemDetail, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -348,6 +350,7 @@ private fun DeleteConfirmationDialog(
 fun ItemDetailsScreenPreview() {
     InventoryTheme {
         ItemDetailsBody(ItemDetailsUiState(
-            outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10", "Joe", "joe@doe.com", "+78005553535")
-        ), onSellItem = {}, onShareItem = {}, onSaveItem = {}, onDelete = {}, hideImportantData = false, prohibitSendingData = false)    }
+            outOfStock = true, itemDetails = ItemDetails(1, "Pen", "$100", "10", "Bob", "bob@gmail.com", "+78005553535")
+        ), onSellItem = {}, onShareItem = {}, onSaveItem = {}, onDelete = {}, hideImportantData = false, prohibitSendingData = false)
+    }
 }

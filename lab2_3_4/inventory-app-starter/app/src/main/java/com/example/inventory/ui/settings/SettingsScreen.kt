@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.inventory.ui.settings
 
 import androidx.compose.foundation.clickable
@@ -63,6 +79,7 @@ object SettingsDestination : NavigationDestination {
     override val route = "settings"
     override val titleRes = R.string.settings_title
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -71,6 +88,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -95,6 +113,7 @@ fun SettingsScreen(
         )
     }
 }
+
 @Composable
 private fun SettingsBody(
     settingsUiState: SettingsUiState,
@@ -113,6 +132,7 @@ private fun SettingsBody(
                 onSettingsChanged(settingsUiState.copy(hideImportantData = it))
             }
         )
+
         SettingCheckbox(
             label = "Prohibit sending data",
             checked = settingsUiState.prohibitSendingData,
@@ -120,6 +140,7 @@ private fun SettingsBody(
                 onSettingsChanged(settingsUiState.copy(prohibitSendingData = it))
             }
         )
+
         SettingCheckbox(
             label = "Use default items quantity",
             checked = settingsUiState.useDefaultItemsQuantity,
@@ -127,6 +148,7 @@ private fun SettingsBody(
                 onSettingsChanged(settingsUiState.copy(useDefaultItemsQuantity = it))
             }
         )
+
         if (settingsUiState.useDefaultItemsQuantity) {
             OutlinedTextField(
                 value = settingsUiState.defaultItemsQuantity,
@@ -140,12 +162,12 @@ private fun SettingsBody(
                     unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                     disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
-                modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
         }
     }
 }
+
 @Composable
 private fun SettingCheckbox(
     label: String,
@@ -162,6 +184,7 @@ private fun SettingCheckbox(
         Text(label)
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun SettingsPreview() {
@@ -171,6 +194,7 @@ fun SettingsPreview() {
         )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun SettingsBodyPreview() {

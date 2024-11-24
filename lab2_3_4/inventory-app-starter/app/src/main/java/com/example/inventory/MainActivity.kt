@@ -18,10 +18,9 @@ package com.example.inventory
 import android.R.id
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import android.provider.DocumentsContract
 import android.os.Bundle
+import android.provider.DocumentsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,16 +28,15 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.core.net.toFile
-import com.example.inventory.ui.item.ItemDetails
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.update
 import androidx.security.crypto.EncryptedFile
+import com.example.inventory.ui.item.ItemDetails
 import com.example.inventory.ui.theme.InventoryTheme
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import java.io.FileInputStream
 import java.io.File
+import java.io.FileInputStream
 
 
 class MainActivity : ComponentActivity() {
@@ -74,6 +72,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
         lifecycleScope.launch {
             SharedData.dataToSave.collect {
                 if (it.text.isNotBlank()) {
@@ -87,6 +86,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
         lifecycleScope.launch {
             SharedData.dataToLoad.collect {
                 if (it.needToLoad && it.data == null) {
@@ -98,6 +98,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
         SharedData.preferences = Preferences(this)
     }
 
@@ -108,12 +109,14 @@ class MainActivity : ComponentActivity() {
         if (resultCode != Activity.RESULT_OK) {
             return
         }
+
         when (requestCode) {
             CREATE_FILE -> {
                 val intent = resultData ?: return
                 val uri = intent.data ?: return
                 val id = DocumentsContract.getDocumentId(uri)
                 val outputStream = contentResolver.openOutputStream(uri) ?: return
+
                 val file = File(cacheDir.absolutePath + "/" + id)
                 if (file.exists()) {
                     file.delete()
@@ -124,20 +127,25 @@ class MainActivity : ComponentActivity() {
                     SharedData.preferences.masterKey,
                     EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
                 ).build()
+
                 val encryptedOutputStream = encryptedFile.openFileOutput()
                 encryptedOutputStream.write(dataToSave.toByteArray(Charsets.UTF_8))
                 encryptedOutputStream.flush()
                 encryptedOutputStream.close()
+
                 val inputStream = file.inputStream()
                 outputStream.write(inputStream.readBytes())
                 inputStream.close()
+
                 outputStream.close()
             }
+
             LOAD_FILE -> {
                 val intent = resultData ?: return
                 val uri = intent.data ?: return
                 val id = DocumentsContract.getDocumentId(uri)
                 val inputStream = contentResolver.openInputStream(uri) ?: return
+
                 val file = File(cacheDir.absolutePath + "/" + id)
                 if (file.exists()) {
                     file.delete()
@@ -146,6 +154,7 @@ class MainActivity : ComponentActivity() {
                 outputStream.write(inputStream.readBytes())
                 outputStream.flush()
                 outputStream.close()
+
                 lateinit var encryptedInputStream: FileInputStream
                 try {
                     val encryptedFile: EncryptedFile = EncryptedFile.Builder(
@@ -158,6 +167,7 @@ class MainActivity : ComponentActivity() {
                     val data = encryptedInputStream.readBytes()
                     val stringData = data.toString(Charsets.UTF_8)
                     val objectData: ItemDetails = Json.decodeFromString<ItemDetails>(stringData)
+
                     lifecycleScope.launch {
                         SharedData.dataToLoad.update {
                             it.copy(data = objectData)

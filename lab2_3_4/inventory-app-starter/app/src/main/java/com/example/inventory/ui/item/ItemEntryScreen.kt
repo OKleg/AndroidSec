@@ -307,6 +307,7 @@ fun ItemInputForm(
                 )
             }
         }
+
         if (!isNew) {
             Column(modifier = modifier.padding(0.dp)) {
                 OutlinedTextField(
@@ -341,10 +342,10 @@ private fun ItemEntryScreenPreview() {
         ItemEntryBody(itemUiState = ItemUiState(
             ItemDetails(
                 name = "Item name",
-                price = "11.11",
+                price = "10.00",
                 quantity = "5",
-                agentName = "Joe",
-                agentEmail = "joe@doe.com",
+                agentName = "Bob",
+                agentEmail = "bob@gmail.com",
                 agentPhoneNumber = "+78005553535"
             )
         ), onItemValueChange = {}, onSaveClick = {}, onLoadClick = {})

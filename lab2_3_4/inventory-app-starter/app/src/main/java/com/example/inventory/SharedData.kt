@@ -7,22 +7,24 @@ import androidx.security.crypto.MasterKey
 import com.example.inventory.ui.item.ItemDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 
-data class LoadData(val needToLoad: Boolean = false, val data: ItemDetails? = null)
-
-data class ShareData(val text: String = "") {
-    override fun equals(other: Any?): Boolean {
-        return this === other
-    }
-    override fun hashCode(): Int {
-        return text.hashCode()
-    }
-}
 object SharedData {
     val dataToShare: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
     val dataToSave: MutableStateFlow<ShareData> = MutableStateFlow(ShareData())
     val dataToLoad: MutableStateFlow<LoadData> = MutableStateFlow(LoadData())
     lateinit var preferences: Preferences
 }
+
+data class ShareData(val text: String = "") {
+    override fun equals(other: Any?): Boolean {
+        return this === other
+    }
+
+    override fun hashCode(): Int {
+        return text.hashCode()
+    }
+}
+
+data class LoadData(val needToLoad: Boolean = false, val data: ItemDetails? = null)
 
 class Preferences(context: Context) {
     val masterKey: MasterKey = MasterKey.Builder(context)
@@ -35,6 +37,7 @@ class Preferences(context: Context) {
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
+
     init {
         val editor = sharedPreferences.edit()
         if (!sharedPreferences.contains(HIDE_IMPORTANT_DATA)) {
@@ -51,6 +54,7 @@ class Preferences(context: Context) {
         }
         editor.apply()
     }
+
     companion object {
         const val HIDE_IMPORTANT_DATA: String = "HIDE_IMPORTANT_DATA"
         const val PROHIBIT_SENDING_DATA: String = "PROHIBIT_SENDING_DATA"

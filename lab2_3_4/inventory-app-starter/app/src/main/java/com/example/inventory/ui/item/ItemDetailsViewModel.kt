@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
 /**
  * ViewModel to retrieve, update and delete an item from the [ItemsRepository]'s data source.
  */
@@ -80,7 +81,6 @@ class ItemDetailsViewModel(
             }
         }
     }
-
 
     fun save() {
         viewModelScope.launch {

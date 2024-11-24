@@ -24,6 +24,7 @@ import com.commonsware.cwac.saferoom.SafeHelperFactory
 import com.commonsware.cwac.saferoom.SQLCipherUtils
 import com.example.inventory.SharedData
 
+
 /**
  * Database class with a singleton Instance object.
  */
@@ -49,7 +50,7 @@ abstract class InventoryDatabase : RoomDatabase() {
                 Room.databaseBuilder(context, InventoryDatabase::class.java, databaseName)
                     .openHelperFactory(factory)
                     .build()
-                    .also { instance  = it }
+                    .also { instance = it }
             }
         }
     }

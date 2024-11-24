@@ -49,6 +49,10 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
             }
         }
     }
+
+    /**
+     * Holds current item ui state
+     */
     private val useDefaultItemsQuantity = SharedData.preferences.sharedPreferences.getBoolean(
         Preferences.USE_DEFAULT_ITEMS_QUANTITY,
         false
@@ -57,11 +61,9 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
         Preferences.DEFAULT_ITEMS_QUANTITY,
         "1"
     )!!
-    /**
-     * Holds current item ui state
-     */
     var itemUiState by mutableStateOf(ItemUiState(
-        itemDetails = if (useDefaultItemsQuantity) ItemDetails(quantity = defaultItemsQuantity) else ItemDetails()    ))
+        itemDetails = if (useDefaultItemsQuantity) ItemDetails(quantity = defaultItemsQuantity) else ItemDetails()
+    ))
         private set
 
     /**
@@ -143,7 +145,6 @@ data class ItemDetails(
     val agentEmail: String = "",
     val agentPhoneNumber: String = "",
     val sourceType: String = ""
-
 ) {
     override fun toString(): String {
         var result = "Name: $name\nPrice: $price\nQuantity: $quantity\n"
@@ -197,6 +198,7 @@ fun Item.formatedPrice(): String {
  */
 fun Item.toItemUiState(isEntryValid: Boolean = false): ItemUiState = ItemUiState(
     itemDetails = this.toItemDetails(),
+    //isEntryValid = isEntryValid
 )
 
 /**
