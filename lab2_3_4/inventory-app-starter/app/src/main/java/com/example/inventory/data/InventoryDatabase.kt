@@ -38,20 +38,50 @@ abstract class InventoryDatabase : RoomDatabase() {
         private var instance: InventoryDatabase? = null
         private val databaseName = "item_database"
 
+        //https://github.com/commonsguy/cwac-saferoom/blob/master/README-original.markdown
         fun getDatabase(context: Context): InventoryDatabase {
             // if the Instance is not null, return it, otherwise create a new database instance.
+            //1
             return instance ?: synchronized(this) {
                 val key = SharedData.preferences.masterKey.toString().toCharArray()
-                val factory = SafeHelperFactory(key)
+                val factory = SafeHelperFactory(Key)
                 val databaseState = SQLCipherUtils.getDatabaseState(context, databaseName)
+                //2
                 if (databaseState == SQLCipherUtils.State.UNENCRYPTED) {
-                    SQLCipherUtils.encrypt(context, databaseName, key)
+                    SQLCipherUtils.encrypt(context, databaseName, Key)
                 }
+                //1,3
                 Room.databaseBuilder(context, InventoryDatabase::class.java, databaseName)
                     .openHelperFactory(factory)
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { instance = it }
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private val Key = "key".toCharArray()
+
     }
 }

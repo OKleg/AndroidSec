@@ -321,7 +321,7 @@ private fun ItemDetailsRow(
     Row(modifier = modifier) {
         Text(text = stringResource(labelResID))
         Spacer(modifier = Modifier.weight(1f))
-        Text(text = if (hideImportantData) "****" else itemDetail, fontWeight = FontWeight.Bold)
+        Text(text = if (hideImportantData) "******" else itemDetail, fontWeight = FontWeight.Bold)
     }
 }
 

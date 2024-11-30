@@ -15,7 +15,6 @@
  */
 package com.example.inventory
 
-import android.R.id
 import android.app.Activity
 import android.content.Intent
 import android.os.Build
@@ -58,7 +57,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
+        //
         lifecycleScope.launch {
             SharedData.dataToShare.collect {
                 if (it.text.isNotBlank()) {
@@ -117,23 +116,24 @@ class MainActivity : ComponentActivity() {
                 val id = DocumentsContract.getDocumentId(uri)
                 val outputStream = contentResolver.openOutputStream(uri) ?: return
 
-                val file = File(cacheDir.absolutePath + "/" + id)
-                if (file.exists()) {
-                    file.delete()
+                val tempFile = File(cacheDir.absolutePath + "/" + id)
+                if (tempFile.exists()) {
+                    tempFile.delete()
                 }
-                val encryptedFile: EncryptedFile = EncryptedFile.Builder(
+                val encryptedTempFile: EncryptedFile = EncryptedFile.Builder(
                     this,
-                    file,
+                    tempFile,
                     SharedData.preferences.masterKey,
                     EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
                 ).build()
 
-                val encryptedOutputStream = encryptedFile.openFileOutput()
+                val encryptedOutputStream = encryptedTempFile.openFileOutput()
                 encryptedOutputStream.write(dataToSave.toByteArray(Charsets.UTF_8))
                 encryptedOutputStream.flush()
+
                 encryptedOutputStream.close()
 
-                val inputStream = file.inputStream()
+                val inputStream = tempFile.inputStream()
                 outputStream.write(inputStream.readBytes())
                 inputStream.close()
 
@@ -146,11 +146,12 @@ class MainActivity : ComponentActivity() {
                 val id = DocumentsContract.getDocumentId(uri)
                 val inputStream = contentResolver.openInputStream(uri) ?: return
 
-                val file = File(cacheDir.absolutePath + "/" + id)
-                if (file.exists()) {
-                    file.delete()
+                val tempFile = File(cacheDir.absolutePath + "/" + id)
+                if (tempFile.exists()) {
+                    tempFile.delete()
                 }
-                val outputStream = file.outputStream()
+
+                val outputStream = tempFile.outputStream()
                 outputStream.write(inputStream.readBytes())
                 outputStream.flush()
                 outputStream.close()
@@ -159,7 +160,7 @@ class MainActivity : ComponentActivity() {
                 try {
                     val encryptedFile: EncryptedFile = EncryptedFile.Builder(
                         this,
-                        file,
+                        tempFile,
                         SharedData.preferences.masterKey,
                         EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
                     ).build()
