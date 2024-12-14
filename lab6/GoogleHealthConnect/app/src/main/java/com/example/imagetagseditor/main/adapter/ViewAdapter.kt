@@ -5,8 +5,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.imagetagseditor.R
+import com.example.imagetagseditor.model.StepsInfo
 
-class ViewAdapter(private var tags: List<Pair<String, String>>) :
+class ViewAdapter(private var data: MutableList<StepsInfo>) :
     RecyclerView.Adapter<ViewHolder>() {
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -16,11 +17,12 @@ class ViewAdapter(private var tags: List<Pair<String, String>>) :
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        viewHolder.key.text = tags[position].first
-        viewHolder.value.text = tags[position].second
+        val date = data[position].date
+        viewHolder.date.text = "${date.year + 1900}/${date.month + 1}/${date.date}"
+        viewHolder.stepsNumber.text = data[position].stepsNumber.toString()
     }
 
-    override fun getItemCount() = tags.count()
+    override fun getItemCount() = data.count()
 
     @SuppressLint("NotifyDataSetChanged")
     fun update() {

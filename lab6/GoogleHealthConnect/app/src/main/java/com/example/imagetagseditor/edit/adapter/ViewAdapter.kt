@@ -6,8 +6,12 @@ import android.view.ViewGroup
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.example.imagetagseditor.R
+import com.example.imagetagseditor.main.MainViewModel
+import com.example.imagetagseditor.model.StepsInfo
+import java.text.ParseException
+import java.text.SimpleDateFormat
 
-class ViewAdapter(private var tags: MutableList<Pair<String, String>>) :
+class ViewAdapter(private var data: MutableList<StepsInfo>) :
     RecyclerView.Adapter<ViewHolder>() {
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -17,14 +21,44 @@ class ViewAdapter(private var tags: MutableList<Pair<String, String>>) :
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        viewHolder.tag.hint = tags[position].first
-        viewHolder.tag.setText(tags[position].second)
-        viewHolder.tag.doOnTextChanged { text, start, before, count ->
-            tags[position] = Pair(tags[position].first, text.toString())
+        val date = data[position].date
+        viewHolder.date.setText("${date.year + 1900}/${date.month + 1}/${date.date}")
+        viewHolder.date.doOnTextChanged { text, start, before, count ->
+            try {
+                val currentPosition = viewHolder.adapterPosition
+                val newDate = SimpleDateFormat("yyyy/MM/dd").parse(text.toString())
+                if (newDate != null) {
+                    data[currentPosition] = data[currentPosition].copy(date = newDate)
+                    if (data[currentPosition].recordId != null) {
+                        MainViewModel.getInstance().idsToUpdate.add(data[currentPosition].recordId!!)
+                    }
+                }
+            } catch (e: ParseException) {
+                //...
+            }
+        }
+        viewHolder.stepsNumber.setText(data[position].stepsNumber.toString())
+        viewHolder.stepsNumber.doOnTextChanged { text, start, before, count ->
+            val currentPosition = viewHolder.adapterPosition
+            val newStepsNumber = text.toString().toLongOrNull()
+            if (newStepsNumber != null && newStepsNumber >= 1 && newStepsNumber <= 1000000) {
+                data[currentPosition] = data[currentPosition].copy(stepsNumber = newStepsNumber)
+                if (data[currentPosition].recordId != null) {
+                    MainViewModel.getInstance().idsToUpdate.add(data[currentPosition].recordId!!)
+                }
+            }
+        }
+        viewHolder.delete.setOnClickListener {
+            val currentPosition = viewHolder.adapterPosition
+            if (data[currentPosition].recordId != null) {
+                MainViewModel.getInstance().idsToDelete.add(data[currentPosition].recordId!!)
+            }
+            data.removeAt(currentPosition)
+            update()
         }
     }
 
-    override fun getItemCount() = tags.count()
+    override fun getItemCount() = data.count()
 
     @SuppressLint("NotifyDataSetChanged")
     fun update() {

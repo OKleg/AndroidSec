@@ -21,30 +21,25 @@ import com.example.imagetagseditor.BuildConfig
 import com.example.imagetagseditor.R
 import com.example.imagetagseditor.edit.adapter.ViewAdapter
 import com.example.imagetagseditor.main.MainViewModel
-import com.example.imagetagseditor.model.ImageData
+import com.example.imagetagseditor.model.HealthData
+import com.example.imagetagseditor.model.StepsInfo
+import java.time.Instant
+import java.util.Date
 import java.io.File
 import java.util.UUID
 
 class EditFragment : Fragment() {
-    companion object {
-        const val REQUEST_CODE = 3
-    }
-
     private val viewModel = MainViewModel.getInstance()
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ViewAdapter
+    private lateinit var add: Button
     private lateinit var save: Button
-    private var localTags = emptyList<Pair<String, String>>().toMutableList()
-    private lateinit var saveCallback: () -> Unit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.imageData.tags.forEach {
-            if (ImageData.editableTagNames.contains(it.first)) {
-                localTags.add(it)
-            }
-        }
-        adapter = ViewAdapter(localTags)
+        viewModel.tempHealthData.stepsRecords.clear()
+        viewModel.tempHealthData.stepsRecords.addAll(viewModel.healthData.stepsRecords)
+        adapter = ViewAdapter(viewModel.tempHealthData.stepsRecords)
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -56,55 +51,22 @@ class EditFragment : Fragment() {
         recyclerView = view.findViewById(R.id.editable_tags_list)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
-        save = view.findViewById(R.id.save)
-        saveCallback = {
-            saveExifTags(viewModel.imageUri, localTags)
-            view.findNavController().navigate(R.id.action_editFragment_to_mainFragment)
+        add = view.findViewById(R.id.add)
+        add.setOnClickListener {
+            viewModel.tempHealthData.stepsRecords.add(StepsInfo(
+                recordId = null,
+                date = Date.from(Instant.now()),
+                stepsNumber = 1
+            ))
+            adapter.update()
         }
+        save = view.findViewById(R.id.save)
         save.setOnClickListener {
-            if (!Environment.isExternalStorageManager()) {
-                requestPermission()
-            } else {
-                saveCallback()
-            }
+            viewModel.dumpHealthData()
+            viewModel.healthData.stepsRecords.clear()
+            viewModel.healthData.stepsRecords.addAll(viewModel.tempHealthData.stepsRecords)
+            it.findNavController().navigateUp()
         }
         return view
-    }
-
-    private fun saveExifTags(uri: Uri, tags: List<Pair<String, String>>) {
-        val mainInputStream = context?.contentResolver?.openInputStream(uri) ?: return
-        val file = File(context?.cacheDir?.absolutePath + "/" + UUID.randomUUID().toString())
-        if (file.exists()) {
-            file.delete()
-        }
-        val tempOutputStream = file.outputStream()
-        tempOutputStream.write(mainInputStream.readBytes())
-
-        val metadata = ExifInterface(file)
-        tags.forEach {
-            metadata.setAttribute(it.first, it.second)
-        }
-        metadata.saveAttributes()
-
-        val mainOutputStream = context?.contentResolver?.openOutputStream(uri) ?: return
-        val tempInputStream = file.inputStream()
-        mainOutputStream.write(tempInputStream.readBytes())
-    }
-
-    private fun requestPermission() {
-        val accessIntent = Intent(
-            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-            Uri.parse("package:" + BuildConfig.APPLICATION_ID)
-        )
-        startActivityForResult(accessIntent, REQUEST_CODE)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE && Environment.isExternalStorageManager()) {
-            saveCallback()
-        }
     }
 }
