@@ -23,9 +23,9 @@ import com.example.imagetagseditor.edit.adapter.ViewAdapter
 import com.example.imagetagseditor.main.MainViewModel
 import com.example.imagetagseditor.model.HealthData
 import com.example.imagetagseditor.model.StepsInfo
+import java.io.File
 import java.time.Instant
 import java.util.Date
-import java.io.File
 import java.util.UUID
 
 class EditFragment : Fragment() {

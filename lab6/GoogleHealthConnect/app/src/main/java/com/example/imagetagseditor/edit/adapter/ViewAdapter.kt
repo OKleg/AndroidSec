@@ -22,15 +22,16 @@ class ViewAdapter(private var data: MutableList<StepsInfo>) :
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val date = data[position].date
-        viewHolder.date.setText("${date.year + 1900}/${date.month + 1}/${date.date}")
+        viewHolder.date.setText("${date.year + 1900}/${date.month + 1}/${date.date} ${date.hours}:${date.minutes}")
         viewHolder.date.doOnTextChanged { text, start, before, count ->
             try {
                 val currentPosition = viewHolder.adapterPosition
-                val newDate = SimpleDateFormat("yyyy/MM/dd").parse(text.toString())
+                val newDate = SimpleDateFormat("yyyy/MM/dd kk:mm").parse(text.toString())
                 if (newDate != null) {
                     data[currentPosition] = data[currentPosition].copy(date = newDate)
                     if (data[currentPosition].recordId != null) {
-                        MainViewModel.getInstance().idsToUpdate.add(data[currentPosition].recordId!!)
+                        MainViewModel.getInstance().idsToDelete.add(data[currentPosition].recordId!!)
+                        data[currentPosition].recordId = null
                     }
                 }
             } catch (e: ParseException) {
@@ -44,8 +45,9 @@ class ViewAdapter(private var data: MutableList<StepsInfo>) :
             if (newStepsNumber != null && newStepsNumber >= 1 && newStepsNumber <= 1000000) {
                 data[currentPosition] = data[currentPosition].copy(stepsNumber = newStepsNumber)
                 if (data[currentPosition].recordId != null) {
-                    MainViewModel.getInstance().idsToUpdate.add(data[currentPosition].recordId!!)
+                    MainViewModel.getInstance().idsToDelete.add(data[currentPosition].recordId!!)
                 }
+                data[currentPosition].recordId = null
             }
         }
         viewHolder.delete.setOnClickListener {

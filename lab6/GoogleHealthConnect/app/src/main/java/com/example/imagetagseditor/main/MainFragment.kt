@@ -24,12 +24,11 @@ import kotlinx.coroutines.launch
 
 
 class MainFragment : Fragment() {
-
-
     private val viewModel = MainViewModel.getInstance()
     private lateinit var adapter: ViewAdapter
     private lateinit var editButton: Button
     private lateinit var recyclerView: RecyclerView
+
     private val permissions =
         setOf(
             HealthPermission.getReadPermission(HeartRateRecord::class),
@@ -43,6 +42,7 @@ class MainFragment : Fragment() {
             viewModel.loadHealthData { adapter.update() }
         }
     }
+
     private fun initHealthConnectClient(context: Context): Boolean {
         val providerPackageName = "com.google.android.apps.healthdata"
         val availabilityStatus = HealthConnectClient.getSdkStatus(context, providerPackageName)
@@ -52,6 +52,7 @@ class MainFragment : Fragment() {
         viewModel.healthConnectClient = HealthConnectClient.getOrCreate(context)
         return true
     }
+
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (!granted.containsAll(permissions)) {
@@ -60,6 +61,7 @@ class MainFragment : Fragment() {
             viewModel.loadHealthData { adapter.update() }
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (viewModel.healthConnectClient == null && !initHealthConnectClient(requireContext()))
