@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.Flow
  * Database access object to access the Inventory database
  */
 @Dao
+
 interface ItemDao {
 
     @Query("SELECT * from items ORDER BY name ASC")

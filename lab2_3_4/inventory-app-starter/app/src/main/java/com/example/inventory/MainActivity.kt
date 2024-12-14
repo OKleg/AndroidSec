@@ -40,7 +40,7 @@ import java.io.FileInputStream
 
 class MainActivity : ComponentActivity() {
     companion object {
-        const val CREATE_FILE = 1
+        const val SAVE_FILE = 1
         const val LOAD_FILE = 2
         var dataToSave = ""
     }
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                         putExtra(Intent.EXTRA_TITLE, "item.json")
                         dataToSave = it.text
                     }
-                    startActivityForResult(intent, CREATE_FILE)
+                    startActivityForResult(intent, SAVE_FILE)
                 }
             }
         }
@@ -110,7 +110,7 @@ class MainActivity : ComponentActivity() {
         }
 
         when (requestCode) {
-            CREATE_FILE -> {
+            SAVE_FILE -> {
                 val intent = resultData ?: return
                 val uri = intent.data ?: return
                 val id = DocumentsContract.getDocumentId(uri)
