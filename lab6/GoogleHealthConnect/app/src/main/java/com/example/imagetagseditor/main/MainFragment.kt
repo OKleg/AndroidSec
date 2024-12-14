@@ -8,12 +8,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.DatePicker
 import androidx.fragment.app.Fragment
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.imagetagseditor.R
 import com.example.imagetagseditor.main.adapter.ViewAdapter
 import kotlinx.coroutines.launch
+import java.util.Date
 
 
 class MainFragment : Fragment() {
@@ -28,6 +31,7 @@ class MainFragment : Fragment() {
     private lateinit var adapter: ViewAdapter
     private lateinit var editButton: Button
     private lateinit var recyclerView: RecyclerView
+    private lateinit var datePicker: DatePicker
 
     private val permissions =
         setOf(
@@ -85,6 +89,23 @@ class MainFragment : Fragment() {
         recyclerView = view.findViewById(R.id.tags_list)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
+        datePicker = view.findViewById(R.id.datePicker)
         return view
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val chosenDate = Date.from(viewModel.timeRange.startTime)
+        datePicker.init(
+            chosenDate.year + 1900,
+            chosenDate.month,
+            chosenDate.date) { view, year, monthOfYear, dayOfMonth ->
+            viewModel.timeRange = TimeRangeFilter.between(
+                Date(year - 1900, monthOfYear, dayOfMonth, 0, 0, 0).toInstant(),
+                Date(year - 1900, monthOfYear, dayOfMonth, 23, 59, 59).toInstant()
+            )
+            viewModel.loadHealthData { adapter.update() }
+        }
+    }
+
 }

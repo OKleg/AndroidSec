@@ -18,7 +18,7 @@ class ViewAdapter(private var data: MutableList<StepsInfo>) :
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val date = data[position].date
-        viewHolder.date.text = "${date.year + 1900}/${date.month + 1}/${date.date} ${date.hours}:${date.minutes}"
+        viewHolder.date.text = "${"%02d".format(date.hours)}:${"%02d".format(date.minutes)}"
         viewHolder.stepsNumber.text = data[position].stepsNumber.toString()
     }
 

@@ -53,18 +53,23 @@ class EditFragment : Fragment() {
         recyclerView.adapter = adapter
         add = view.findViewById(R.id.add)
         add.setOnClickListener {
+            val chosenDate = Date.from(viewModel.timeRange.startTime)
+            val nowDate = Date()
+            chosenDate.hours = nowDate.hours
+            chosenDate.minutes = nowDate.minutes
             viewModel.tempHealthData.stepsRecords.add(StepsInfo(
                 recordId = null,
-                date = Date.from(Instant.now()),
+                date = chosenDate,
                 stepsNumber = 1
             ))
             adapter.update()
         }
         save = view.findViewById(R.id.save)
-        save.setOnClickListener {
+        save.setOnClickListener { it ->
             viewModel.dumpHealthData()
             viewModel.healthData.stepsRecords.clear()
             viewModel.healthData.stepsRecords.addAll(viewModel.tempHealthData.stepsRecords)
+            viewModel.healthData.stepsRecords.sortBy { r -> r.date }
             it.findNavController().navigateUp()
         }
         return view

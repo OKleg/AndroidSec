@@ -10,6 +10,7 @@ import com.example.imagetagseditor.main.MainViewModel
 import com.example.imagetagseditor.model.StepsInfo
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Date
 
 class ViewAdapter(private var data: MutableList<StepsInfo>) :
     RecyclerView.Adapter<ViewHolder>() {
@@ -22,13 +23,14 @@ class ViewAdapter(private var data: MutableList<StepsInfo>) :
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val date = data[position].date
-        viewHolder.date.setText("${date.year + 1900}/${date.month + 1}/${date.date} ${date.hours}:${date.minutes}")
+        viewHolder.date.setText("${"%02d".format(date.hours)}:${"%02d".format(date.minutes)}")
         viewHolder.date.doOnTextChanged { text, start, before, count ->
             try {
                 val currentPosition = viewHolder.adapterPosition
-                val newDate = SimpleDateFormat("yyyy/MM/dd kk:mm").parse(text.toString())
+                val newDate = SimpleDateFormat("k:m").parse(text.toString())
                 if (newDate != null) {
-                    data[currentPosition] = data[currentPosition].copy(date = newDate)
+                    data[currentPosition].date.hours = newDate.hours
+                    data[currentPosition].date.minutes = newDate.minutes
                     if (data[currentPosition].recordId != null) {
                         MainViewModel.getInstance().idsToDelete.add(data[currentPosition].recordId!!)
                         data[currentPosition].recordId = null

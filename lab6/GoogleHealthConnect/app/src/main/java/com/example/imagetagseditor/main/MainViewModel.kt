@@ -29,8 +29,15 @@ class MainViewModel : ViewModel() {
     var tempHealthData = HealthData()
     //var idsToUpdate = emptySet<String>().toMutableSet()
     var idsToDelete = emptySet<String>().toMutableSet()
+    var timeRange: TimeRangeFilter
 
-    private val timeRange: Long = 30 * 86400
+    init {
+        val nowDate = Date()
+        timeRange = TimeRangeFilter.between(
+            Date(nowDate.year, nowDate.month, nowDate.date, 0, 0, 0).toInstant(),
+            Date(nowDate.year, nowDate.month, nowDate.date, 23, 59, 59).toInstant()
+        )
+    }
 
     fun loadHealthData(afterCallback: () -> Unit) = viewModelScope.launch {
         readSteps()
@@ -48,15 +55,13 @@ class MainViewModel : ViewModel() {
 
     private suspend fun readSteps() {
         try {
-            val endInstant = Instant.now()
-            val startInstant = endInstant.minusSeconds(timeRange)
             val response =
                 healthConnectClient!!.readRecords(
                     ReadRecordsRequest(
                         StepsRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant)
+                        timeRangeFilter = timeRange)
                     )
-                )
+            healthData.stepsRecords.clear()
             for (stepRecord in response.records) {
                 healthData.stepsRecords.add(StepsInfo(
                     recordId = stepRecord.metadata.id,
